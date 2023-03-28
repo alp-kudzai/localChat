@@ -1,4 +1,5 @@
 import socket
+import sys
 
 # define the server's IP address and port number
 SERVER_HOST = '192.168.8.110'  # replace with the server's IP address
@@ -19,6 +20,10 @@ print(message)
 while True:
     # get input from the user
     message = input('Enter a message: ')
+    
+    if message == ":q":
+        client_socket.close()
+        sys.exit(0)
 
     # send the message to the server
     client_socket.sendall(message.encode())
