@@ -30,5 +30,5 @@ while True:
 
     # receive the response from the server
     data = client_socket.recv(1024)
-    message = data.decode()
+    message = data.decode("utf-8")
     print(message)

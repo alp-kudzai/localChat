@@ -4,10 +4,11 @@ import threading
 import sys
 import time
 
-print_lock = threading.Lock()
+
 
 def handle_client(client_socket, client_address):
     """Handles a client connection."""
+    running = True
     try:
         with client_socket:
         # send a welcome message to the client
@@ -17,7 +18,7 @@ def handle_client(client_socket, client_address):
             clients.append((client_socket, client_address))
 
             # loop to receive and forward messages from the client
-            while True:
+            while running:
                 #time.sleep(0.2)
 
                 # receive a message from the client
@@ -27,7 +28,7 @@ def handle_client(client_socket, client_address):
                 # if the message is empty, the client has disconnected
                 if not message:
                     print(f"Closing Connection {client_address}")
-                    print_lock.release()
+                    running = False
                     break
 
                 print(f'Received message: {message}')
@@ -39,6 +40,7 @@ def handle_client(client_socket, client_address):
                 for client in clients:
                     if client != (client_socket, client_address):
                         client[0].sendall(f'{client_address[0]}: {message}'.encode())
+                time.sleep(0.5)
     except KeyboardInterrupt:
         print("Function Keyboard Interrupt!")
     finally:
@@ -59,29 +61,26 @@ try:
         server_socket.bind((SERVER_HOST, SERVER_PORT))
 
         # listen for incoming client connections
-        server_socket.listen()
+        server_socket.listen(5)
 
         # list to keep track of connected clients and their corresponding sockets
         clients = []
 
         # loop to accept incoming client connections
         while True:
-            time.sleep(0.2)
             # accept a new client connection
             client_socket, client_address = server_socket.accept()
 
              # lock acquired by client
-            print_lock.acquire()
+            # print_lock.acquire()
             print(f"Connected To: {client_address[0]}, {client_address[1]}")
-
-            # Start a new thread and return its identifier
-            start_new_thread(handle_client, (client_socket, client_address))
 
             #handle_client(client_socket, client_address)
 
             # create a new thread to handle the client connection
-            # client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-            # client_thread.start()
+            client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+            client_thread.start()
+            client_thread.join()
 except KeyboardInterrupt:
     print("Outside Keyboard Interrupt!")
     sys.exit(1)
