@@ -10,16 +10,24 @@ class ThreadedServer(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
         self.Clients = []
+        #timeout 
+        self.sock.settimeout(1)
 
     def listen(self):
         self.sock.listen(5)
         while True:
-            client, address = self.sock.accept()
+            try:
+                client, address = self.sock.accept()
+            except socket.timeout:
+                continue
             self.Clients.append((client, address))
+            #timeout
+            client.settimeout(1)
             client.sendall('Welcome to LoChat!'.encode())
             print(f"Connected to: {address[0]}, {address[1]}")
-            #client.settimeout(60)
+            
             threading.Thread(target = self.listenToClient,args = (client,address)).start()
+
 
     def listenToClient(self, client, address):
         size = 1024
@@ -34,7 +42,7 @@ class ThreadedServer(object):
                 elif received_msg:
                     # Set the response to echo back the recieved data 
                     response = f'\nMessage Received'.encode()
-                    print(f'\nReceived: {received_msg}')
+                    print(f'\nReceived: {received_msg}\nFrom: {address[0]}:{address[1]}')
                     client.sendall(response)
                     for clt in self.Clients:
                         #if clt != (client, address):
@@ -43,11 +51,10 @@ class ThreadedServer(object):
                             clt[0].sendall(f'\nFrom {address[0]}: {received_msg}'.encode())
                             #print('sent...HELLO!')
                         #[( soc, (ip,port) )]
-                
-                time.sleep(0.2)
-            except:
-                client.close()
-                return False
+            except (socket.timeout, ConnectionResetError):
+                #print(f'{address[0]}:{address[1]} timed out!')
+                continue
+
 
 if __name__ == "__main__":
     # while True:
@@ -58,4 +65,4 @@ if __name__ == "__main__":
     #     except ValueError:
     #         pass
     print(f"Starting Server on port {4444}")
-    ThreadedServer('0.0.0.0','4444').listen()
+    ThreadedServer('0.0.0.0',4444).listen()
