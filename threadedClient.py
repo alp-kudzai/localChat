@@ -38,6 +38,10 @@ def ReceiveMsgs():
             print(message)
         except TimeoutError:
             continue
+        except OSError:
+            print("exiting...")
+            client_socket.close()
+            sys.exit()
         
     # except:
     #     # print("\nAn Expection occured!")

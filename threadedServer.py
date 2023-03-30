@@ -20,6 +20,7 @@ class ThreadedServer(object):
                 client, address = self.sock.accept()
             except socket.timeout:
                 continue
+            #added another exception for Ctrl+C and close all sockets
             self.Clients.append((client, address))
             #timeout
             client.settimeout(1)
@@ -36,6 +37,7 @@ class ThreadedServer(object):
                 data = client.recv(size)
                 received_msg = data.decode()
                 if not received_msg:
+                    self.Clients.remove((client, address))
                     client.close()
                     print(f"Client disconnected: {address[0]}:{address[1]}")
                     return False
