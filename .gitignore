@@ -3,4 +3,6 @@ Lib/
 Include/
 pyvenv.cfg
 *.pyc
-
+launch.json
+__pycache__/
+.vscode/

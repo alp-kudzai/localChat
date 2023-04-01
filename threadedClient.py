@@ -51,6 +51,7 @@ Input_thread = threading.Thread(target=InputThread)
 Receive_Msgs = threading.Thread(target=ReceiveMsgs)
 
 Receive_Msgs.start()
+#give time to make connection and get welcome message from server
 time.sleep(0.5)
 Input_thread.start()
 
